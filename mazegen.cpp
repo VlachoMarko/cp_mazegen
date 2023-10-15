@@ -1,25 +1,25 @@
 #include <iostream>
 #include <cassert>
-#include <set>
-#include "mazebase.h"
+#include <map>
+#include "maze.h"
 #include "mazegen.h"
+#include "navigation.h"
     
-MazeGen::MazeGen(int HEIGHT, int WIDTH, int SEED){
+MazeGen::MazeGen(int HEIGHT, int WIDTH, int SEED, std::map<std::pair<int,int>,bool> VISITED){
 
     assert (HEIGHT >= 2 && WIDTH >= 2);
 
-    height = HEIGHT;
-    width = WIDTH;
-    seed = SEED;
+    dimensions = std::make_pair(HEIGHT, WIDTH);
     movingDirection = 0;
-
+    visited = VISITED;
+    seed = SEED;
 }
 
-void MazeGen::GenerateMaze(MazeBase& Maze, std::pair<int,int> currentCell){
+void MazeGen::GenerateMaze(Maze& Maze, std::pair<int,int> currentCell){
 
-    visited.emplace(currentCell);
+    visited.at(currentCell) = true;
     // Maze.GetMazeBase();
-
+    
     while(hasNeighbour(currentCell)){
 
         std::pair<int,int> chosenNeighbour = chooseNeighbour(currentCell);
@@ -30,16 +30,11 @@ void MazeGen::GenerateMaze(MazeBase& Maze, std::pair<int,int> currentCell){
 
     }
 
-
-    
-    // Maze.assign(currentCell.first, currentCell.second, "   ");
-
-
     return;
 }
 
 
-void MazeGen::removeWall(MazeBase& Maze, std::pair<int,int> currentCell){
+void MazeGen::removeWall(Maze& Maze, std::pair<int,int> currentCell){
 
     int RowCoordinate = currentCell.first * 2 + 1;
     int ColumnCoordinate = currentCell.second * 2 + 1;
@@ -47,27 +42,23 @@ void MazeGen::removeWall(MazeBase& Maze, std::pair<int,int> currentCell){
         switch (movingDirection){
                 
             case 0:
-               // std::cout << "move down to " << RowCoordinate+1 << ", " << ColumnCoordinate << std::endl;
                 Maze.assign(RowCoordinate+1, ColumnCoordinate, LEVELSPACE);
                 break;
             
             case 1:
-                // std::cout << "move left to " << RowCoordinate << ", " << ColumnCoordinate-1 << std::endl;
                 Maze.assign(RowCoordinate, ColumnCoordinate-1, VERTICALSPACE);
                 break;
             
             case 2:
-                // std::cout << "move up to " << RowCoordinate-1 << ", " << ColumnCoordinate << std::endl;
                 Maze.assign(RowCoordinate-1, ColumnCoordinate, LEVELSPACE);
                 break;
             
             case 3:
-                // std::cout << "move right to " << RowCoordinate << ", " << ColumnCoordinate+1 << std::endl;
                 Maze.assign(RowCoordinate, ColumnCoordinate+1, VERTICALSPACE);
                 break;
             
         default:
-            // std::cout << "something went wrong in removeWall" << std::endl;
+            throw std::runtime_error("something went wrong in removeWall");
             break;
         }
 
@@ -76,22 +67,17 @@ void MazeGen::removeWall(MazeBase& Maze, std::pair<int,int> currentCell){
 
 std::pair<int,int> MazeGen::chooseNeighbour(std::pair<int,int> currentCell){
 
-    std::pair<int,int> temp;
+    std::pair<int,int> next;
     int i = 0;
 
     int direction = getDirection();
     
     while(true){
 
-        // // std::cout << "direction: " << direction << std::endl;
-        
-
         if(direction <= 3){
-            // std::cout << "custom\n";
             direction = (seed + i) % 4;
         }
-        else {
-            
+        else {            
             direction = getDirection();
             direction = direction % 4;
         }
@@ -101,123 +87,68 @@ std::pair<int,int> MazeGen::chooseNeighbour(std::pair<int,int> currentCell){
         switch (direction){
                 
             case 0:
-                temp = moveDown(currentCell);
+                next = moveDown(currentCell);
                 
-                if (isValidNeighbour(temp, visited)) {
-                    // std::cout << "chosen down" << std::endl;    
+                if (isValidNeighbour(next, visited, dimensions)) {
                     movingDirection = 0;
-                    return temp;
+                    return next;
                 }
                 break;
             
             case 1:
-                temp = moveLeft(currentCell);
+                next = moveLeft(currentCell);
                 
-                if (isValidNeighbour(temp, visited)) {
-                    // std::cout << "chosen left" << std::endl;
+                if (isValidNeighbour(next, visited, dimensions)) {
                     movingDirection = 1;
-                    return temp;
+                    return next;
                 }
                 break;
             
             case 2:
-                temp = moveUp(currentCell);
-                if (isValidNeighbour(temp, visited)) {
-                    // std::cout << "chosen up" << std::endl;
+                next = moveUp(currentCell);
+                if (isValidNeighbour(next, visited, dimensions)) {
                     movingDirection = 2;
-                    return temp;
+                    return next;
                 }
                 break;
             
             case 3:
                 
-                temp = moveRight(currentCell);
+                next = moveRight(currentCell);
                 
-                if (isValidNeighbour(temp, visited)) {
-                    // std::cout << "chosen right" << std::endl;
+                if (isValidNeighbour(next, visited, dimensions)) {
                     movingDirection = 3;
-                    return temp;
+                    return next;
                 }
                 break;
             
-        default:
-            // std::cout << "something went wrong in chooseNeighbour" << std::endl;
-            break;
-        }
+            default:
+                throw std::runtime_error("something went wrong in chooseNeighbour");
+            }
+
         i++;
     }
 
-    // std::cout << "return the same" << "\n";
-    return currentCell;
+    throw std::runtime_error("something went wrong in chooseNeighbour 2.0");
 }
 
 bool MazeGen::hasNeighbour(std::pair<int,int> currentCell){    
 
-    if(isValidNeighbour(moveDown(currentCell), visited)){
-        return true;
-    }
-    
-    if(isValidNeighbour(moveLeft(currentCell), visited)){
-        return true;
-    }
-        
-    if(isValidNeighbour(moveUp(currentCell), visited)){
-        return true;
-    }
-    
-    if(isValidNeighbour(moveRight(currentCell), visited)){
-        return true;
-    }
+    if(isValidNeighbour(moveDown(currentCell), visited, dimensions) || isValidNeighbour(moveLeft(currentCell), visited, dimensions) || 
+            isValidNeighbour(moveUp(currentCell), visited, dimensions) || isValidNeighbour(moveRight(currentCell), visited, dimensions)){
 
-    return false;
-}
-    
-
-// 0 - down
-std::pair<int,int> MazeGen::moveDown(std::pair<int,int> currentCell){
-
-    currentCell.first = currentCell.first + 1;
-    return currentCell;
-}
-       
-// 1 - left  
-std::pair<int,int> MazeGen::moveLeft(std::pair<int,int> currentCell){
-
-    currentCell.second = currentCell.second - 1;
-    return currentCell;
-}
-
-// 2 - up
-std::pair<int,int> MazeGen::moveUp(std::pair<int,int> currentCell){
-
-    currentCell.first = currentCell.first - 1;
-    return currentCell;
-}
-
-// 3 - right
-std::pair<int,int> MazeGen::moveRight(std::pair<int,int> currentCell){
-
-    currentCell.second = currentCell.second + 1;
-    return currentCell;
-}
-
-bool MazeGen::isValidNeighbour(std::pair<int,int> neighbour, std::set<std::pair<int,int>> visitedCopy){
-
-    if(visitedCopy.emplace(neighbour).second && neighbour.first >= 0 &&  neighbour.second >= 0 && neighbour.first < height && neighbour.second < width){
         return true;
     }
     return false;
-
 }
+
 
 int MazeGen::getDirection()
 {              
     if (seed == 0 || seed == 1 || seed == 2 || seed == 3){                
-        // // std::cout << "custom seed" << std::endl;
         return seed;                                           
     }
     else{
-        // // std::cout << "random seed" << std::endl;                                                
         return rand();                                   
     }
 }

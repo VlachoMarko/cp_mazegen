@@ -1,39 +1,31 @@
 #include <iostream>
-#include <set>
-#include <cstdlib>
-#include "mazebase.h"
+#include <map>
+#include "maze.h"
 
-#ifndef MAZEGEN_h
-#define MAZEGEN_h
+#ifndef MAZEGEN_H
+#define MAZEGEN_H
 
 class MazeGen
 {   
     public:
-        MazeGen(int HEIGHT, int WIDTH, int SEED);
-        void GenerateMaze(MazeBase& Maze, std::pair<int,int> currentCell);
+        MazeGen(int HEIGHT, int WIDTH, int SEED, std::map<std::pair<int,int>, bool> VISITED);
+        void GenerateMaze(Maze& Maze, std::pair<int,int> currentCell);
+    
     private:
-        int height;
-        int width;
         int seed;
         int movingDirection;
+        
+        std::pair<int,int> dimensions;
+        std::map<std::pair<int,int>, bool> visited;
 
-        std::set<std::pair<int,int>> visited;
-
-        const std::string VERTICALSPACE = " ";
         const std::string LEVELSPACE = "   ";
-
-        void removeWall(MazeBase& Maze, std::pair<int,int> currentCell);
+        const std::string VERTICALSPACE = " ";
 
         int getDirection();
-
-        std::pair<int,int> moveDown(std::pair<int,int> currentCell);
-        std::pair<int,int> moveLeft(std::pair<int,int> currentCell);
-        std::pair<int,int> moveUp(std::pair<int,int> currentCell);
-        std::pair<int,int> moveRight(std::pair<int,int> currentCell);
-
-        bool isValidNeighbour(std::pair<int,int> neighbour, std::set<std::pair<int,int>> visitedCopy);
         bool hasNeighbour(std::pair<int,int> currentCell);
+        void removeWall(Maze& Maze, std::pair<int,int> currentCell);
         std::pair<int,int> chooseNeighbour(std::pair<int,int> currentCell);
+
 };
 
 #endif

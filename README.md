@@ -9,3 +9,8 @@ This project generates random mazes using the **Recursive Backtracker Algorithm*
   - The number of columns.
 - An optional seed value for random maze generation.
 - Precise Maze Output: Prints the maze and the found path in a specific format to ensure consistency.
+
+# Key Concepts
+- Recursive Backtracking: Used for both maze generation and pathfinding.
+- Classes: Implements well-structured classes to manage the maze, cells, and coordinates.
+- Error Handling: Uses exceptions to handle invalid input or errors during execution.

@@ -7,7 +7,7 @@ This project generates random mazes using the **Recursive Backtracker Algorithm*
 - Command-line Parameters: Takes two or three command-line arguments:
   - The number of rows.
   - The number of columns.
-- An optional seed value for random maze generation.
+  - An optional seed value for random maze generation.
 - Precise Maze Output: Prints the maze and the found path in a specific format to ensure consistency.
 
 # Key Concepts
